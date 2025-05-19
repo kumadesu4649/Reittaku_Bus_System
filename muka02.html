@@ -178,11 +178,21 @@
                     } else if (diffMin < 1) {
                         countdownEl.textContent = `まもなく到着します。`;
                         countdownEl.classList.remove("text-danger", "text-secondary", "text-muted");
-                        countdownEl.style.color = "#FFD600"; // 黄色
+                        countdownEl.style.color = "#ffa500"; // 黄色
                     } else if (diffMin < 10) {
                         countdownEl.textContent = `${diffMin}分${diffSec}秒後`;
                     } else {
                         countdownEl.textContent = `${diffMin}分後`;
+                    }
+                                        // 55秒になったときにmp3を再生
+                    if (diffMin === 0 && diffSec === 58 && !t._played) {
+                        t._played = true;
+                        const audio = new Audio("bgm/bus_arrive2.mp3");
+                        audio.play();
+                        setTimeout(() => {
+                            const audio2 = new Audio("bgm/bus_arrive2.mp3");
+                            audio2.play();
+                        }, 7000); // 1秒後に2回目再生
                     }
                 };
 

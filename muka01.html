@@ -165,6 +165,7 @@
                 destElem.textContent = `→ ${t.destination}`;
                 card.querySelector(".card-body").appendChild(destElem);
 
+
                 const countdownEl = card.querySelector(".countdown");
                 const updateCountdown = () => {
                     const now = new Date();
@@ -173,13 +174,28 @@
                     const diffSec = Math.floor((diffMs % 60000) / 1000);
 
                     if (diffMs <= 0) {
-                        countdownEl.textContent = "バス到着済み";
+                        countdownEl.textContent = "バスが到着しました。";
+                        countdownEl.classList.remove("text-danger", "text-secondary");
+                        countdownEl.classList.add("text-muted");
                     } else if (diffMin < 1) {
                         countdownEl.textContent = `まもなく到着します。`;
+                        countdownEl.classList.remove("text-danger", "text-secondary", "text-muted");
+                        countdownEl.style.color = "#ffa500"; // 黄色
                     } else if (diffMin < 10) {
                         countdownEl.textContent = `${diffMin}分${diffSec}秒後`;
                     } else {
                         countdownEl.textContent = `${diffMin}分後`;
+                    }
+
+                    // 55秒になったときにmp3を再生
+                    if (diffMin === 0 && diffSec === 58 && !t._played) {
+                        t._played = true;
+                        const audio = new Audio("bgm/bus_arrive1.mp3");
+                        audio.play();
+                        setTimeout(() => {
+                            const audio2 = new Audio("bgm/bus_arrive1.mp3");
+                            audio2.play();
+                        }, 10000); // 1秒後に2回目再生
                     }
                 };
 
