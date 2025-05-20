@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>宣伝文再生サイト</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        .controls { margin-bottom: 1em; }
+        label { margin-right: 1em; }
+    </style>
+</head>
+<body>
+    <h1>宣伝文再生サイト</h1>
+    <div class="controls">
+        <label>
+            <input type="radio" name="audio" value="bgm/normal.mp3" checked>
+            ノーマル
+        </label>
+        <label>
+            <input type="radio" name="audio" value="bgm/delayed.mp3">
+            ノーマル（遅延）
+        </label>
+        <label>
+            <input type="radio" name="audio" value="bgm/welcome.mp3">
+            ようこそ麗澤！（遅延なし）
+        </label>
+        <label>
+            <input type="radio" name="audio" value="bgm/welcome_delayed.mp3">
+            ようこそ麗澤！（遅延）
+        </label>
+    </div>
+    <div class="controls">
+        <button id="playBtn">再生</button>
+        <button id="pauseBtn">一時停止</button>
+        <label>
+            リピート間隔（分）:
+            <input type="number" id="intervalInput" value="10" min="1" style="width:4em;">
+        </label>
+        <button id="repeatBtn">リピート開始</button>
+        <button id="stopRepeatBtn">リピート停止</button>
+    </div>
+    <audio id="audioPlayer" controls style="width:100%;"></audio>
+
+        <div class="text-center my-3">
+        <a href="index.html" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house-door me-2"></i>ホームへ戻る
+        </a>
+    </div>
+
+    <script>
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const stopRepeatBtn = document.getElementById('stopRepeatBtn');
+        const intervalInput = document.getElementById('intervalInput');
+        let repeatTimer = null;
+
+        function getSelectedAudio() {
+            const selected = document.querySelector('input[name="audio"]:checked');
+            return selected ? selected.value : 'audio1.mp3';
+        }
+
+        function loadSelectedAudio() {
+            audioPlayer.src = getSelectedAudio();
+        }
+
+        // 初期音声ロード
+        loadSelectedAudio();
+
+        document.querySelectorAll('input[name="audio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                loadSelectedAudio();
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+            });
+        });
+
+        playBtn.onclick = () => {
+            if (audioPlayer.src !== location.href + getSelectedAudio()) {
+                loadSelectedAudio();
+            }
+            audioPlayer.play();
+        };
+
+        pauseBtn.onclick = () => {
+            audioPlayer.pause();
+        };
+
+    repeatBtn.onclick = () => {
+        clearInterval(repeatTimer);
+        const intervalMinutes = parseInt(intervalInput.value, 10);
+        const intervalMs = intervalMinutes * 60 * 1000; // 分 → ミリ秒
+
+    function playAudio() {
+        loadSelectedAudio();
+        audioPlayer.currentTime = 0;
+        audioPlayer.play();
+    }
+
+    playAudio(); // 初回再生
+
+        repeatTimer = setInterval(playAudio, intervalMs); // 指定分ごとに再生
+    };
+
+    stopRepeatBtn.onclick = () => {
+        clearInterval(repeatTimer);
+        repeatTimer = null;
+        };
+    </script>
+</body>
+</html>

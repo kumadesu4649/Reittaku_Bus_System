@@ -1,7 +1,7 @@
 {
   "bus_stop": "向原",
   "weekday": [
-    { "time": "03:01", "route_name": "【始発】南柏05系統-南柏駅東口行", "destination": "今谷→南柏駅" },
+    { "time": "03:27", "route_name": "【始発】南柏05系統-南柏駅東口行", "destination": "今谷→南柏駅" },
     { "time": "05:49", "route_name": "【始発】南柏05系統-南柏駅東口行", "destination": "今谷→南柏駅" },
     { "time": "05:56", "route_name": "南柏04系統-南柏駅東口行", "destination": "今谷→南柏駅" },
     { "time": "06:03", "route_name": "南柏05系統-南柏駅東口行", "destination": "今谷→南柏駅" },
