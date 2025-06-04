@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>002向原-酒井根方面</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .delayed { color: orange !important; }
+    </style>
+</head>
+
+<body class="bg-light">
+    <script>
+        function reloadAtZeroSecond() {
+            const now = new Date();
+            const msToNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+            setTimeout(() => {
+                window.location.reload();
+            }, msToNextMinute);
+        }
+        reloadAtZeroSecond();
+    </script>
+
+    <div class="container py-5">
+
+    <marquee bgcolor="#ffd9d9">このページは向原バス停。酒井根・クリーンセンター方面行きの発車時刻情報です。電波状況により、表示が乱れたり、表示できない場合がございますので、予めご了承ください。</marquee>
+        <div class="text-center mb-4">
+            <i class="bi bi-bus-front-fill display-1" style="color: #a72828;"></i>
+            <h1 class="mt-2 fw-bold">向原バス停 発車時刻</h1>
+            <h3 class="text-secondary">酒井根・クリーンセンター方面</h3>
+            <div class="mt-3">
+                <span class="badge bg-danger text-white fs-5">
+                    現在時刻: <span id="current-time"></span>
+                </span>
+            </div>
+            <div class="mt-3">
+            <div class="alert alert-warning border border-2 border-warning shadow-sm py-2 px-3" role="alert" style="background-color: #fffbe6; font-size: 0.95em; max-width: 420px; margin: 0 auto;">
+                <strong><div class="mb-1 text-danger" style="font-size:1em;">この情報には遅延・運休の反映はありません</div></strong>
+                <div>あくまで<strong>発車時刻の目安</strong>としてご利用ください</div>
+            </div>
+            </div>
+</div>
+        <div class="row justify-content-center g-4">
+            <div class="col-md-6">
+                <div class="card mb-3 shadow-sm border-primary">
+                    <div class="card-body">
+                        <h5 class="mb-3"><i class="bi bi-1-circle text-primary"></i> <span class="fw-bold">今度のバス</span></h5>
+                        <h5 class="card-title"></h5>
+                        <p class="card-text mb-2">
+                            <i class="bi bi-clock-fill me-2 text-secondary"></i>
+                            発車時刻 <span class="fw-bold"></span>
+                        </p>
+                        <div class="fs-4 countdown text-danger fw-bold"></div>
+                    </div>
+                </div>
+                <div class="card mb-3 shadow-sm border-secondary">
+                    <div class="card-body">
+                        <h5 class="mb-3"><i class="bi bi-2-circle text-secondary"></i> <span class="fw-bold">そのつぎのバス</span></h5>
+                        <h5 class="card-title"></h5>
+                        <p class="card-text mb-2">
+                            <i class="bi bi-clock-fill me-2 text-secondary"></i>
+                            発車時刻 <span class="fw-bold"></span>
+                        </p>
+                        <div class="fs-4 countdown text-secondary fw-bold"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="text-center my-4">
+        <button class="btn btn-outline-primary btn-lg" onclick="window.location.reload();">
+            <i class="bi bi-arrow-clockwise me-2"></i>ページを更新
+        </button>
+    </div>
+
+        <div class="text-center my-3">
+        <a href="index.html" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house-door me-2"></i>ホームへ戻る
+        </a>
+    </div>
+
+    <footer class="text-center py-4">
+                <p class="text-muted">
+            このデータは、各停留所の時刻表を元に作成しています。<br>
+            正確な情報については、<a href="https://www.tobu-bus.com/pc/index.php" target="_blank" rel="noopener">東武バスの公式サイト</a>をご確認ください。<br>
+        </p>
+        <p class="text-muted">麗澤大学 工学部</p>
+    </footer>
+
+    <script>
+        function updateCurrentTime() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const h = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('current-time').textContent = `${y}/${m}/${d} ${h}:${min}:${s}`;
+        }
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+
+        let countdownIntervals = [];
+
+        async function loadAndRender() {
+            try {
+                const response = await fetch("./static/timetable2.json");
+                const data = await response.json();
+                renderBusTimes(data);
+            } catch (error) {
+                console.error("JSON読み込みエラー:", error);
+            }
+        }
+
+        function renderBusTimes(data) {
+            // clear previous intervals
+            countdownIntervals.forEach(clearInterval);
+            countdownIntervals = [];
+
+            const now = new Date();
+            // 月〜木: weekday, 金〜日: weekend
+            const day = now.getDay(); // 0:日, 1:月, ..., 5:金, 6:土
+            const dayType = (day >= 5 || day === 0) ? "weekend" : "weekday";
+            const times = data[dayType];
+
+            // 平日/休日の表示
+            let dayTypeText = "";
+            if (dayType === "weekday") {
+                dayTypeText = "平日ダイヤ";
+            } else {
+                dayTypeText = "休日ダイヤ";
+            }
+            let dayTypeElem = document.getElementById("day-type");
+            if (!dayTypeElem) {
+                dayTypeElem = document.createElement("div");
+                dayTypeElem.id = "day-type";
+                dayTypeElem.className = "mb-3 fs-5 fw-bold text-primary";
+                const container = document.querySelector(".text-center.mb-4");
+                container.appendChild(dayTypeElem);
+            }
+            dayTypeElem.textContent = `本日は「${dayTypeText}」です`;
+
+            const futureTimes = times
+                .map(t => {
+                    const [hour, minute] = t.time.split(":").map(Number);
+                    const busTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);
+                    const diffMs = busTime - now;
+                    return {
+                        ...t,
+                        timeObj: busTime,
+                        diffMs,
+                    };
+                })
+                .filter(t => t.diffMs > -60000)
+                .sort((a, b) => a.diffMs - b.diffMs)
+                .slice(0, 2);
+
+            const cards = document.querySelectorAll(".card");
+            futureTimes.forEach((t, idx) => {
+                const card = cards[idx];
+                card.querySelector(".card-title").textContent = `${t.route_name}`;
+                card.querySelector(".card-text .fw-bold").textContent = `${t.time}`;
+
+                // 行先表示追加
+                card.querySelector(".destination")?.remove();
+                const destElem = document.createElement("div");
+                destElem.className = "destination text-muted";
+                destElem.textContent = `→ ${t.destination}`;
+                card.querySelector(".card-body").appendChild(destElem);
+
+                const countdownEl = card.querySelector(".countdown");
+                const updateCountdown = () => {
+                    const now = new Date();
+                    const diffMs = t.timeObj - now;
+                    const diffMin = Math.floor(diffMs / 60000);
+                    const diffSec = Math.floor((diffMs % 60000) / 1000);
+
+                    if (diffMs <= 0) {
+                        countdownEl.textContent = "バスが到着しました。";
+                        countdownEl.classList.remove("text-danger", "text-secondary");
+                        countdownEl.classList.add("text-muted");
+                    } else if (diffMin < 1) {
+                        countdownEl.textContent = `まもなく到着します。`;
+                        countdownEl.classList.remove("text-danger", "text-secondary", "text-muted");
+                        countdownEl.style.color = "#ffa500"; // 黄色
+                    } else if (diffMin < 10) {
+                        countdownEl.textContent = `${diffMin}分${diffSec}秒後`;
+                    } else {
+                        countdownEl.textContent = `${diffMin}分後`;
+                    }
+                    // 58秒になったときにmp3を再生（行先で分岐）
+                    if (diffMin === 0 && diffSec === 58 && !t._played) {
+                        t._played = true;
+
+                        let audioSrc = "bgm/bus_arrive2.mp3"; // デフォルト
+
+                        // 行先で条件分岐
+                        if (t.destination === "今谷→酒井根") {
+                            audioSrc = "bgm/bus_arrive3.mp3";
+                        } else if (t.destination === "今谷→中原→酒井根") {
+                            audioSrc = "bgm/bus_arrive4.mp3";
+                        } else if (t.destination === "今谷→酒井根→南部クリーンセンター") {
+                            audioSrc = "bgm/bus_arrive5.mp3";
+                        } else if (t.destination === "今谷→中原→増尾駅") {
+                            audioSrc = "bgm/bus_arrive6.mp3";
+                        } else if (t.destination === "今谷→酒井根→増尾駅入口→柏駅東口") {
+                            audioSrc = "bgm/bus_arrive7.mp3";
+                        } else if (t.destination === "今谷→中原→酒井根 ※倍額運賃です。") {
+                            audioSrc = "bgm/bus_arrive8.mp3";
+                        } else if (t.destination === "今谷→酒井根→南部クリーンセンター ※倍額運賃です。") {
+                            audioSrc = "bgm/bus_arrive8.mp3";
+                        }
+
+                        const audio = new Audio(audioSrc);
+                        audio.play();
+
+                        setTimeout(() => {
+                            const audio2 = new Audio(audioSrc);
+                            audio2.play();
+                        }, 8000); // 8秒後に2回目再生
+                    }
+                };
+
+                updateCountdown();
+                const interval = setInterval(updateCountdown, 1000);
+                countdownIntervals.push(interval);
+            });
+        }
+
+        loadAndRender();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <div class="text-center text-muted mb-3" style="font-size: 0.95em;">
+        効果音: <a href="https://otologic.jp/" target="_blank" rel="noopener">OtoLogic</a> ／ 音声: <a href="https://voicevox.hiroshiba.jp/" target="_blank" rel="noopener">VOICEVOX:四国めたん</a>
+    </div>
+</body>
+</html>
